@@ -227,12 +227,15 @@ def score(ref_turns, sys_turns, uem, der_collar=0.0,
         return Scores(None, bcubed_precision, bcubed_recall, bcubed_f1,
                       tau_ref_sys, tau_sys_ref, ce_ref_sys, ce_sys_ref,
                       mi, nmi)
-    file_to_der, global_der = metrics.der(
+    file_to_der, file_to_mst, file_to_fast, file_to_est, global_der = metrics.der(
         ref_turns, sys_turns, der_collar, der_ignore_overlaps, uem)
     file_to_scores = {}
     for file_id, cm in iteritems(file_to_cm):
         scores = compute_metrics(cm)
         scores.der = file_to_der[file_id]
+        scores.mst = file_to_mst[file_id]
+        scores.fast = file_to_fast[file_id]
+        scores.est = file_to_est[file_id]
         file_to_scores[file_id] = scores
     global_scores = compute_metrics(global_cm)
     global_scores.der = global_der

@@ -175,6 +175,9 @@ def print_table(file_to_scores, global_scores, n_digits=2,
     """
     col_names = ['File',
                  'DER', # Diarization error rate.
+                 'DER-mst',
+                 'DER-fast',
+                 'DER-est',
                  'B3-Precision', # B-cubed precision.
                  'B3-Recall', # B-cubed recall.
                  'B3-F1', # B-cubed F1.
@@ -188,12 +191,12 @@ def print_table(file_to_scores, global_scores, n_digits=2,
     rows = []
     for file_id in sorted(iterkeys(file_to_scores)):
         scores = file_to_scores[file_id]
-        row = [file_id, scores.der, scores.bcubed_precision,
+        row = [file_id, scores.der, scores.mst, scores.fast, scores.est, scores.bcubed_precision,
                scores.bcubed_recall, scores.bcubed_f1, scores.tau_ref_sys,
                scores.tau_sys_ref, scores.ce_ref_sys, scores.ce_sys_ref,
                scores.mi, scores.nmi]
         rows.append(row)
-    rows.append(['*** OVERALL ***', global_scores.der, global_scores.bcubed_precision,
+    rows.append(['*** OVERALL ***', global_scores.der, 0, 0, 0, global_scores.bcubed_precision,
                  global_scores.bcubed_recall, global_scores.bcubed_f1,
                  global_scores.tau_ref_sys, global_scores.tau_sys_ref,
                  global_scores.ce_ref_sys, global_scores.ce_sys_ref,

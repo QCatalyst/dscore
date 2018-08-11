@@ -446,6 +446,18 @@ def der(ref_turns, sys_turns, collar=0.0, ignore_overlaps=False, uem=None):
     ders[np.isnan(ders)] = 0 # Numerator and denominator both 0.
     ders[np.isinf(ders)] = 1 # Numerator > 0, but denominator = 0.
     ders *= 100. # Convert to percent.
+    msts = miss_speaker_times/scored_speaker_times
+    msts[np.isnan(msts)] = 0
+    msts[np.isinf(msts)] = 1
+    msts *=100.
+    fasts = fa_speaker_times/scored_speaker_times
+    fasts[np.isnan(fasts)] = 0
+    fasts[np.isinf(fasts)] = 1
+    fasts *= 100.
+    ests = error_speaker_times/scored_speaker_times
+    ests[np.isnan(ests)] = 0
+    ests[np.isinf(ests)] = 1
+    ests *= 100.
 
     # Reconcile with UEM, keeping in mind that in the edge case where no
     # reference turns are observed for a file, md-eval doesn't report results
@@ -463,6 +475,49 @@ def der(ref_turns, sys_turns, collar=0.0, ignore_overlaps=False, uem=None):
                 [turn for turn in sys_turns if turn.file_id == file_id])
             der = 100. if n_sys_turns else 0.0
         file_to_der[file_id] = der
+
+    file_to_mst_base = dict(zip(file_ids, msts))
+    file_to_mst = {}
+    for file_id in uem:
+        try:
+            mst = file_to_mst_base[file_id]
+        except KeyError:
+            # Check for any system turns for that file, which should be FAs,
+            # assuming that the turns have been cropped to the UEM scoring
+            # regions.
+            n_sys_turns = len(
+                [turn for turn in sys_turns if turn.file_id == file_id])
+            mst = 100. if n_sys_turns else 0.0
+        file_to_mst[file_id] = mst
+
+    file_to_fast_base = dict(zip(file_ids, fasts))
+    file_to_fast = {}
+    for file_id in uem:
+        try:
+            fast = file_to_fast_base[file_id]
+        except KeyError:
+            # Check for any system turns for that file, which should be FAs,
+            # assuming that the turns have been cropped to the UEM scoring
+            # regions.
+            n_sys_turns = len(
+                [turn for turn in sys_turns if turn.file_id == file_id])
+            fast = 100. if n_sys_turns else 0.0
+        file_to_fast[file_id] = fast
+
+    file_to_est_base = dict(zip(file_ids, ests))
+    file_to_est = {}
+    for file_id in uem:
+        try:
+            est = file_to_est_base[file_id]
+        except KeyError:
+            # Check for any system turns for that file, which should be FAs,
+            # assuming that the turns have been cropped to the UEM scoring
+            # regions.
+            n_sys_turns = len(
+                [turn for turn in sys_turns if turn.file_id == file_id])
+            est = 100. if n_sys_turns else 0.0
+        file_to_est[file_id] = est
+
     global_der = file_to_der_base['ALL']
 
-    return file_to_der, global_der
+    return file_to_der, file_to_mst, file_to_fast, file_to_est, global_der
